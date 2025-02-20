@@ -72,11 +72,7 @@ namespace ET
                     //{"ServerName":"0","MessageType":5,"RemoteAddress":"127.0.0.1:49942","SteamID":"076561197960287900","ClientType":"STEAM","Parameter":"?ServerPassword=123123?Name=Noob#initgame","Pad_1":29}
                     var json = JObject.Parse(content);
 
-                    //目前不处理非 SteamID 类型账户
-                    if (json["Pad_1"].ToObject<int>() != 29)
-                    {
-                        return BuildFail(json, -1).ToString();
-                    }
+                    //json["Pad_1"] = 29;
 
                     var Parameter = json["Parameter"].ToString();
                     string serverPassword = ExtractParameter(Parameter, "ServerPassword");

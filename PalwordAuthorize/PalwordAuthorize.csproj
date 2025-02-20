@@ -28,10 +28,6 @@
 		<DefineConstants>
 		</DefineConstants>
 	</PropertyGroup>
-	<PropertyGroup>
-		<ReactorLocation>"D:\Program Files\ProtectTools\Eziriz .NET Reactor 6.9.0\dotNET_Reactor.Console.exe"</ReactorLocation>
-		<ReactorProject>"D:\Program Files\ProtectTools\Eziriz .NET Reactor 6.9.0\base_date.nrproj"</ReactorProject>
-	</PropertyGroup>
 	<ItemGroup>
 		<None Include="Properties\app.manifest" />
 	</ItemGroup>
@@ -78,12 +74,4 @@
 			<DependentUpon>Settings.settings</DependentUpon>
 		</Compile>
 	</ItemGroup>
-	<ProjectExtensions>
-		<VisualStudio>
-			<UserProperties Reactor_Commands="" Reactor_Configuration="Debug" Reactor_Deploy="1" Reactor_Enabled="1" Reactor_Output="&lt;AssemblyLocation&gt;\&lt;AssemblyFileName&gt;" Reactor_Project="D:\Program Files\ProtectTools\Eziriz .NET Reactor 6.8.0\base.nrproj" />
-		</VisualStudio>
-	</ProjectExtensions>
-	<Target Name="ReactorCall" AfterTargets="CopyFilesToOutputDirectory">
-		<Exec Command="$(ReactorLocation) -file &quot;$(TargetPath)&quot; -project $(ReactorProject) -targetfile &quot;$(TargetPath)&quot;" Condition="'$(ConfigurationName)' == 'Release'" />
-	</Target>
 </Project>

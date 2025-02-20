@@ -53,12 +53,8 @@ namespace UIConsole.App
             Directory.CreateDirectory("Temp");
             Game.AddSingleton<MainThreadSynchronizationContext>();
             Game.AddSingleton<Logger>().ILog = new NLogger("Console", 1, Path.GetFullPath("./Config/NLog/NLog.config"));
-#if !DEBUG
-            if (!License.Status.Licensed)
-            {
-                Environment.Exit(0);
-            }
-#endif
+
+
             Game.AddSingleton<CodeTypes, Assembly[]>(new[] { typeof(ET.Game).Assembly, Assembly.GetEntryAssembly() });
             Game.AddSingleton<TimeInfo>();
             Game.AddSingleton<IdGenerater>();
