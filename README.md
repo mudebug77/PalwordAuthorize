@@ -1,5 +1,5 @@
 # PalwordAuthorize
-幻兽帕鲁 对SteamID做授权
+幻兽帕鲁 对SteamID做授权 palworld
 
 ## 功能介绍
 需要为帕鲁服务器设置一个密码，然后才能使用SteamID密码功能<br>
