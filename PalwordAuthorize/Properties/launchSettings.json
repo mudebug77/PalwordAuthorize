@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Apps.App": {
+      "commandName": "Project",
+      "commandLineArgs": "--Process 1"
+    }
+  }
+}

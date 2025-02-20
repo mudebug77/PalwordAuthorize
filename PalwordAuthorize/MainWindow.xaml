@@ -1,0 +1,27 @@
+﻿<controls:MetroWindow
+        xmlns:controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:Expand="clr-namespace:UIConsole.App" 
+        Closed="Window_Closed"
+        Closing="MetroWindow_Closing"
+        x:Class="UIConsole.App.MainWindow"
+        Title="MainWindow" Height="450" Width="720"
+        WindowStartupLocation="CenterScreen"
+        NonActiveWindowTitleBrush  ="#4682B4"
+        Keyboard.KeyUp="MetroWindow_KeyUp"
+        TitleCharacterCasing="Normal"
+        >
+    <controls:MetroWindow.RightWindowCommands>
+        <controls:WindowCommands>
+
+        </controls:WindowCommands>
+    </controls:MetroWindow.RightWindowCommands>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <!--<RowDefinition Height="21"/>-->
+        </Grid.RowDefinitions>
+        <Frame Name="ContentFrame" NavigationUIVisibility="Hidden" Grid.Row="0"/>
+    </Grid>
+</controls:MetroWindow>

@@ -1,3 +1,6 @@
+![Logo](Images/caption.png)
+# Palbot - Your Palworld Companion Discord Bot
+
 # PalwordAuthorize
 幻兽帕鲁 对SteamID做授权 palworld
 

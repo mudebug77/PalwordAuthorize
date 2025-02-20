@@ -1,0 +1,51 @@
+﻿<Application x:Class="ConsoleApp.App"
+            xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+            xmlns:local="clr-namespace:ConsoleApp"
+            DispatcherUnhandledException="Application_DispatcherUnhandledException"
+            Startup="Application_Startup"
+            StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- MahApps.Metro resource dictionaries. Make sure that all file names are Case Sensitive! -->
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
+                <!-- Theme setting -->
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Themes/Light.Blue.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- Repeat this for each control-->
+            <Style TargetType="{x:Type Button}" BasedOn="{StaticResource MahApps.Styles.Button.Square.Accent}">
+                <Setter Property="Background" Value="#990078d7" />
+                <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.IdealForeground}" />
+                <Setter Property="mah:ControlsHelper.ContentCharacterCasing" Value="Normal" />
+            </Style>
+            
+
+            <ControlTemplate TargetType="TextBoxBase" x:Key="TextBoxTemplate">
+                <Border CornerRadius="5" BorderThickness="0.8" BorderBrush="#990078d7" Padding="1,0,0,0" MinHeight="24" Background="{TemplateBinding Panel.Background}">
+                    <ScrollViewer Name="PART_ContentHost" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+                </Border>
+            </ControlTemplate>
+            <Style TargetType="{x:Type TextBox}" BasedOn="{StaticResource MahApps.Styles.TextBox}">
+                <Setter Property="Template" Value="{StaticResource TextBoxTemplate}" />
+            </Style>
+
+            <Style TargetType="{x:Type CheckBox}" BasedOn="{StaticResource MahApps.Styles.CheckBox.Win10}">
+                <Setter Property="mah:CheckBoxHelper.CheckBackgroundFillChecked" Value="#990078d7" />
+                <Setter Property="MinWidth" Value="1" />
+                <Setter Property="Padding" Value="3 0 0 0" />
+            </Style>
+
+            <Style TargetType="{x:Type ComboBox}" BasedOn="{StaticResource MahApps.Styles.ComboBox}">
+                <Setter Property="Border.CornerRadius" Value="10" />
+                <Setter Property="Border.BorderThickness" Value="0.8" />
+                <Setter Property="Border.BorderBrush" Value="#990078d7" />
+            </Style>
+
+        </ResourceDictionary>
+    </Application.Resources>
+    
+</Application>

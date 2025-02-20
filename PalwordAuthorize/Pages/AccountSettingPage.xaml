@@ -1,0 +1,115 @@
+﻿<Page x:Class="ConsoleApp.Pages.AccountSettingPage"
+      xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:ConsoleApp.Pages"
+      Loaded="Page_Loaded" Unloaded="Page_Unloaded"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="720"
+      Title="AccountSettingPage">
+
+    <Grid x:Name="maingrid" Background="#EEEEEEEE">
+        <TabControl mah:HeaderedControlHelper.HeaderFontSize="20">
+            <TabItem Header="基础设定">
+                <Grid>
+                    <Label Content="PalwordServer密码" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,8,0,0"/>
+                    <TextBox x:Name="c_PalwordServerPassword" Width="225" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="132,8,0,0" TextChanged="ConfigChanged"/>
+
+                    <CheckBox x:Name="c_EnablePasswordUser" Content="开启 密码StemID" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="132,45,0,0" Checked="ConfigChanged" Unchecked="ConfigChanged"/>
+                    <CheckBox x:Name="c_EnableCountryCheck" Content="开启 IP区域检测" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="132,77,0,0" Checked="ConfigChanged" Unchecked="ConfigChanged"/>
+                    <ComboBox x:Name="c_CountryCheckType" SelectionChanged="ConfigChanged" HorizontalAlignment="Left" FontSize="10" VerticalAlignment="Top" Margin="251,80,0,0" Width="120" />
+                </Grid>
+            </TabItem>
+            <TabItem Header="密码StemID">
+                <ListView x:Name="uiPasswordUserList" ScrollViewer.HorizontalScrollBarVisibility ="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" IsSynchronizedWithCurrentItem="True" >
+                    <ListView.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem x:Name="mi_PasswordUserList_add" Header="新增" Click="mi_PasswordUserList_add_Click"/>
+                            <MenuItem x:Name="mi_PasswordUserList_del" Header="删除" Click="mi_PasswordUserList_del_Click"/>
+                        </ContextMenu>
+                    </ListView.ContextMenu>
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Width="32" Header="啟用">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox IsChecked="{Binding Enable}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Width="95" Header="密码">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBox Text="{Binding Password}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Width="145" Header="ID">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBox Text="{Binding SteamID}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Width="32" Header="启用">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox IsChecked="{Binding EnableExpireTime}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Width="145" Header="过期时间">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Grid>
+                                            <StackPanel Orientation="Horizontal">
+                                                <mah:DateTimePicker IsClockVisible="True" Culture="zh-CN"  PickerVisibility="All" SelectedDateTime ="{Binding ExpireTime}" Width="135" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Width="185" Header="備註">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBox Text="{Binding Remark}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </TabItem>
+            <TabItem Header="IP地区">
+                <ListView x:Name="uiCountryCheckList" ScrollViewer.HorizontalScrollBarVisibility ="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" IsSynchronizedWithCurrentItem="True" >
+                    <ListView.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem x:Name="mi_CountryCheckList_add" Header="新增" Click="mi_CountryCheckList_add_Click"/>
+                            <MenuItem x:Name="mi_CountryCheckList_del" Header="删除" Click="mi_CountryCheckList_del_Click"/>
+                        </ContextMenu>
+                    </ListView.ContextMenu>
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Width="32" Header="啟用">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox IsChecked="{Binding Enable}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Width="125" Header="区域">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBox Text="{Binding Country}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Page>

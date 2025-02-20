@@ -1,0 +1,89 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net8.0-windows10.0.22621.0</TargetFramework>
+		<RootNamespace>ConsoleApp</RootNamespace>
+		<LangVersion>10</LangVersion>
+		<AssemblyName>PalwordAuthorize</AssemblyName>
+		<Prefer32Bit>false</Prefer32Bit>
+		<PlatformTarget>x64</PlatformTarget>
+	</PropertyGroup>
+	<PropertyGroup>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+		<ApplicationIcon>QQ图片20250220010216.ico</ApplicationIcon>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<OutputPath>..\Bin\</OutputPath>
+		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+		<Optimize>false</Optimize>
+		<DefineConstants>
+		</DefineConstants>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<OutputPath>..\Bin\</OutputPath>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+		<Optimize>true</Optimize>
+		<DefineConstants>
+		</DefineConstants>
+	</PropertyGroup>
+	<PropertyGroup>
+		<ReactorLocation>"D:\Program Files\ProtectTools\Eziriz .NET Reactor 6.9.0\dotNET_Reactor.Console.exe"</ReactorLocation>
+		<ReactorProject>"D:\Program Files\ProtectTools\Eziriz .NET Reactor 6.9.0\base_date.nrproj"</ReactorProject>
+	</PropertyGroup>
+	<ItemGroup>
+		<None Include="Properties\app.manifest" />
+	</ItemGroup>
+	<PropertyGroup>
+		<ApplicationManifest>Properties\app.manifest</ApplicationManifest>
+		<UseWPF>True</UseWPF>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Costura.Fody" Version="5.7.0">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="MahApps.Metro" Version="2.4.10" />
+		<PackageReference Include="PropertyChanged.Fody" Version="4.1.0" />
+	</ItemGroup>
+	<ItemGroup>
+		<Content Include="QQ图片20250220010216.ico" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="Properties\Settings.settings">
+			<Generator>SettingsSingleFileGenerator</Generator>
+			<LastGenOutput>Settings.Designer.cs</LastGenOutput>
+		</None>
+	</ItemGroup>
+	<ItemGroup>
+		<Compile Include="..\..\Unity\Assets\Scripts\Hotfix\Share\**\*.cs">
+			<Link>ET\Share\%(RecursiveDir)%(FileName)%(Extension)</Link>
+		</Compile>
+		<Compile Include="..\..\Unity\Assets\Scripts\Hotfix\Server\Module\**\*.cs">
+			<Link>ET\Server\%(RecursiveDir)%(FileName)%(Extension)</Link>
+		</Compile>
+		<Compile Include="..\Hotfix\Mudebug\Share\**\*.cs">
+			<Link>ET\Mudebug\Share\Hotfix\%(RecursiveDir)%(FileName)%(Extension)</Link>
+		</Compile>
+	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\ThirdParty\DotNet.ThirdParty.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+		<Compile Update="Properties\Settings.Designer.cs">
+			<DesignTimeSharedInput>True</DesignTimeSharedInput>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>Settings.settings</DependentUpon>
+		</Compile>
+	</ItemGroup>
+	<ProjectExtensions>
+		<VisualStudio>
+			<UserProperties Reactor_Commands="" Reactor_Configuration="Debug" Reactor_Deploy="1" Reactor_Enabled="1" Reactor_Output="&lt;AssemblyLocation&gt;\&lt;AssemblyFileName&gt;" Reactor_Project="D:\Program Files\ProtectTools\Eziriz .NET Reactor 6.8.0\base.nrproj" />
+		</VisualStudio>
+	</ProjectExtensions>
+	<Target Name="ReactorCall" AfterTargets="CopyFilesToOutputDirectory">
+		<Exec Command="$(ReactorLocation) -file &quot;$(TargetPath)&quot; -project $(ReactorProject) -targetfile &quot;$(TargetPath)&quot;" Condition="'$(ConfigurationName)' == 'Release'" />
+	</Target>
+</Project>
