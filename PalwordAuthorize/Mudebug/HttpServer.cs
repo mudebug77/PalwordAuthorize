@@ -110,24 +110,17 @@ namespace ET
                         var ok = false;
                         ipCountry = await IPCountryPool.Instance.GetCountry(ip_data[0]);
                         var c_data = MainConfig.Instance.CountryCheckList.FirstOrDefault(t => t.Enable && t.Country == ipCountry);
-                        if (MainConfig.Instance.CountryCheckType == ECountryCheckType.区域允许)
+                        if (c_data != null)
                         {
-                            if (c_data != null)
+                            if (c_data.CountryCheckType == ECountryCheckType.区域允许)
                             {
                                 ok = true;
                             }
                         }
                         else
                         {
-                            //不允许模式
-                            if (c_data == null)
-                            {
-                                ok = true;
-                            }
-                        }
-                        if (MainConfig.Instance.EnablePrivateIP)
-                        {
-                            if (ipCountry == "private")
+                            //其他区域禁止
+                            if (MainConfig.Instance.OtherCountryCheckType == ECountryCheckType.区域允许)
                             {
                                 ok = true;
                             }
@@ -135,6 +128,7 @@ namespace ET
 
                         if (!ok)
                         {
+                            Log.Info($"用户区域被禁止:{RemoteAddress} [{ipCountry}] [{SteamID}]");
                             return BuildFail(RemoteAddress, -2).ToString();
                         }
                     }

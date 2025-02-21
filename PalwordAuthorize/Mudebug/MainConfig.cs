@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -33,6 +34,7 @@ namespace ET
         public event PropertyChangedEventHandler PropertyChanged;
         public bool Enable { get; set; }
         public string Country { get; set; }
+        public ECountryCheckType CountryCheckType { get; set; }
     }
 
 
@@ -59,12 +61,13 @@ namespace ET
 
         public string PalwordServerPassword { get; set; } = "88888888";
         public bool EnablePasswordUser { get; set; } = true;
+
+        //[JsonProperty("PasswordUserList_v2")]
         public ObservableCollection<PasswordUserData> PasswordUserList { get; private set; } = new ObservableCollection<PasswordUserData>();
 
 
-        public bool EnablePrivateIP { get; set; } = true;
         public bool EnableCountryCheck { get; set; } = false;
-        public ECountryCheckType CountryCheckType { get; set; } = ECountryCheckType.区域禁止;
+        public ECountryCheckType OtherCountryCheckType { get; set; } = ECountryCheckType.区域禁止;
         public ObservableCollection<CountryCheckData> CountryCheckList { get; private set; } = new ObservableCollection<CountryCheckData>();
     }
 }

@@ -18,7 +18,7 @@ namespace ET
         private List<(int hash, string Country)> IPHashAndCountry;
         public void Awake()
         {
-            IPHashAndCountry = new List<(int hash, string Country)>();
+            IPHashAndCountry = new List<(int hash, string Country)>(200);
         }
         public void PushHistoryCountry(int iphash, string Country)
         {

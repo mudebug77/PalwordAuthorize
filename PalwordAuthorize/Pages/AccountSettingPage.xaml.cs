@@ -64,7 +64,7 @@ namespace ConsoleApp.Pages
 
         private void mi_CountryCheckList_add_Click(object sender, RoutedEventArgs e)
         {
-            MainConfig.Instance.CountryCheckList.Add(new CountryCheckData() { Enable = false,  Country= "Hong Kong" });
+            MainConfig.Instance.CountryCheckList.Add(new CountryCheckData() { Enable = false,  Country= "private" });
         }
 
         private void mi_CountryCheckList_del_Click(object sender, RoutedEventArgs e)
