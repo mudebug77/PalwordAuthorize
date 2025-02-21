@@ -4,6 +4,9 @@ using EmbedIO.Routing;
 using EmbedIO.WebApi;
 using Flurl.Http;
 using Newtonsoft.Json.Linq;
+using Prospect.Unreal.Serialization;
+using Renci.SshNet.Messages;
+using Swan;
 using System;
 using System.IO;
 using System.Linq;
@@ -13,6 +16,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using Windows.ApplicationModel.Contacts;
 
 namespace ET
 {
@@ -20,8 +24,8 @@ namespace ET
     {
         private string ExtractParameter(string input, string paramName)
         {
-            // 正则表达式提取指定参数的值
-            var pattern = $@"[?&]{paramName}=([^?&]*)";
+            //var pattern = $@"[?&]{paramName}=([^?&]*)";
+            var pattern = $@"[?&]{paramName}=([^?&#]*)";
             var match = Regex.Match(input, pattern);
             // 如果找到匹配项，则返回参数值，否则返回 null
             return match.Success ? match.Groups[1].Value : null;
@@ -30,35 +34,50 @@ namespace ET
         private string ReplaceParameterValue(string input, string paramName, string newValue)
         {
             // 正则表达式查找并替换指定参数的值
-            var pattern = $@"([?&]){paramName}=([^?&]*)";
+            var pattern = $@"([?&]){paramName}=([^?&#]*)";
             var replacement = $"$1{paramName}={newValue}";  // 替换为新的值
 
             return Regex.Replace(input, pattern, replacement);
         }
 
-        private JObject BuildSuccess(JObject json,string SteamID)
+        private JObject BuildFail(string RemoteAddress,int code)
         {
-            var ret = new JObject();
-            var oldParameter = json["Parameter"].ToString();
-            ret["code"] = 0;
-            ret["ServerName"] = json["ServerName"];
-            ret["Pad_1"] = json["Pad_1"];
-            ret["SteamID"] = SteamID;
-            ret["ClientType"] = json["ClientType"];
-            ret["RemoteAddress"] = json["RemoteAddress"];
+            var json = new JObject();
+            json["code"] = code;
+            json["RemoteAddress"] = RemoteAddress;
 
-            ret["Parameter"] = ReplaceParameterValue(oldParameter, "ServerPassword", MainConfig.Instance.PalwordServerPassword);
-            return ret;
+            return json;
         }
 
-        private JObject BuildFail(JObject json, int code)
+        private JObject BuildSuccess(string RemoteAddress, FBitReader fbr,string newSteamID)
         {
-            var ret = new JObject();
-            ret["code"] = code;
-            ret["Parameter"] = json["Parameter"];
-            ret["RemoteAddress"] = json["RemoteAddress"];
-            return ret;
+            var json = new JObject();
+            fbr.Pos = 8;
+
+            var ServerName = fbr.ReadString();
+            var Parameter = fbr.ReadString();
+            var fbr_SteamID = fbr.ReadUniqueNetId();
+            var ClientType = fbr.ReadString();
+
+            json["code"] = 0;
+            json["RemoteAddress"] = RemoteAddress;
+
+            FBitWriter fbw = new FBitWriter();
+            fbw.SetAllowResize(true);
+
+            fbw.WriteByte(5);
+            fbw.WriteString(ServerName);
+            var newParameter = ReplaceParameterValue(Parameter, "ServerPassword", MainConfig.Instance.PalwordServerPassword);
+            fbw.WriteString(newParameter);
+            fbw.WriteUniqueNetId(newSteamID);
+            fbw.WriteString(ClientType);
+
+            var BitHex = fbw.GetData().ToHex(0, (int)fbw.GetNumBytes());
+            json["BitHex"] = BitHex;
+
+            return json;
         }
+
 
         [Route(HttpVerbs.Post, "/ClientInitGame")]
         public async Task<string> ClientInitGame()
@@ -69,99 +88,92 @@ namespace ET
                 Log.Info(content);
                 if ((content != null) && (content[0] == '{'))
                 {
-                    //{"ServerName":"0","MessageType":5,"RemoteAddress":"127.0.0.1:49942","SteamID":"076561197960287900","ClientType":"STEAM","Parameter":"?ServerPassword=123123?Name=Noob#initgame","Pad_1":29}
                     var json = JObject.Parse(content);
+                    var RemoteAddress = json["RemoteAddress"].ToString();
+                    var hexBuffer = json["BitHex"].ToString().FormatBytes();
+                    FBitReader fbr = new FBitReader(hexBuffer);
+                    fbr.Pos = 8;
+                    var ServerName = fbr.ReadString();
+                    var Parameter = fbr.ReadString();
+                    var SteamID = fbr.ReadUniqueNetId();
+                    var ClientType = fbr.ReadString();
+                    var ipCountry = "";
 
-                    //json["Pad_1"] = 29;
+                    if (MainConfig.Instance.EnableCountryCheck)
+                    {
+                        var ip_data = RemoteAddress.Split(':');
+                        if (ip_data.Length != 2 || ip_data[0].Length == 0)
+                        {
+                            return BuildFail(RemoteAddress, -1).ToString();
+                        }
 
-                    var Parameter = json["Parameter"].ToString();
-                    string serverPassword = ExtractParameter(Parameter, "ServerPassword");
-                    string name = ExtractParameter(Parameter, "Name");
+                        var ok = false;
+                        ipCountry = await IPCountryPool.Instance.GetCountry(ip_data[0]);
+                        var c_data = MainConfig.Instance.CountryCheckList.FirstOrDefault(t => t.Enable && t.Country == ipCountry);
+                        if (MainConfig.Instance.CountryCheckType == ECountryCheckType.区域允许)
+                        {
+                            if (c_data != null)
+                            {
+                                ok = true;
+                            }
+                        }
+                        else
+                        {
+                            //不允许模式
+                            if (c_data == null)
+                            {
+                                ok = true;
+                            }
+                        }
+                        if (MainConfig.Instance.EnablePrivateIP)
+                        {
+                            if (ipCountry == "private")
+                            {
+                                ok = true;
+                            }
+                        }
 
+                        if (!ok)
+                        {
+                            return BuildFail(RemoteAddress, -2).ToString();
+                        }
+                    }
                     PasswordUserData p_data = null;
                     if (MainConfig.Instance.EnablePasswordUser)
                     {
+                        string serverPassword = ExtractParameter(Parameter, "ServerPassword");
                         if (serverPassword == null)
                         {
-                            return BuildFail(json, -1).ToString();
+                            Log.Info($"用户未输入服务器密码:{RemoteAddress}");
+                            return BuildFail(RemoteAddress, -3).ToString();
                         }
-
                         p_data = MainConfig.Instance.PasswordUserList.FirstOrDefault(t => t.Enable && t.Password == serverPassword);
                         if (p_data == null)
                         {
-                            return BuildFail(json, -2).ToString();
+                            Log.Info($"用户输入密码不存在:{RemoteAddress} [{serverPassword}]");
+                            return BuildFail(RemoteAddress, -4).ToString();
                         }
 
                         if (p_data.EnableExpireTime)
                         {
                             if (p_data.ExpireTime < DateTime.Now)
                             {
-                                return BuildFail(json, -3).ToString();
+                                Log.Info($"用户输入密码已过期:{RemoteAddress} [{serverPassword}] {p_data.ExpireTime}");
+                                return BuildFail(RemoteAddress, -5).ToString();
                             }
                         }
                     }
 
-                    var ok = false;
-                    if (MainConfig.Instance.EnableCountryCheck)
+                    
+                    if (p_data != null)
                     {
-                        var ip_data = json["RemoteAddress"].ToString().Split(':');
-                        if (ip_data.Length != 2 || ip_data[0].Length == 0)
-                        {
-                            return BuildFail(json, -5).ToString();
-                        }
-
-                        var jsonString = await $"http://ip-api.com/json/{ip_data[0]}?time=111{TimeInfo.Instance.ClientNow()}".GetStringAsync();
-                        if (jsonString[0] != '{')
-                        {
-                            return BuildFail(json, -6).ToString();
-                        }
-                        var retJson = JObject.Parse(jsonString);
-                        if (retJson["status"].ToString() == "success")
-                        {
-                            //當前IP:61.227.133.140 區域:Taiwan isp:Chunghwa Telecom Co., Ltd. 
-                            var sCountry = retJson["country"].ToString();
-                            var sIsp = retJson["isp"].ToString();
-                            Log.Info($"{json["SteamID"]} ip:{ip_data[0]} country:{sCountry} isp:{sIsp}");
-
-                            var c_data = MainConfig.Instance.CountryCheckList.FirstOrDefault(t => t.Enable && t.Country == sCountry);
-                            if (MainConfig.Instance.CountryCheckType == ECountryCheckType.区域允许)
-                            {
-                                if (c_data != null)
-                                {
-                                    ok = true;
-                                }
-                            }else
-                            {
-                                //不允许模式
-                                if (c_data == null)
-                                {
-                                    ok = true;
-                                }
-                            }
-                        }else
-                        {
-                            return BuildFail(json, -4).ToString();
-                        }
-                    }else
-                    {
-                        ok = true;
-                    }
-                    if (ok)
-                    {
-                        if (p_data != null)
-                        {
-                            var ret = BuildSuccess(json, p_data.SteamID);
-                            return ret.ToString();
-                        }
-                        else
-                        {
-                            var ret = BuildSuccess(json, json["SteamID"].ToString());
-                            return ret.ToString();
-                        }
+                        Log.Info($"登录成功:{RemoteAddress} [{p_data.SteamID}] {ipCountry}");
+                        return BuildSuccess(RemoteAddress, fbr, p_data.SteamID).ToString();
                     }
                     else
                     {
-                        return BuildFail(json, -7).ToString();
+                        Log.Info($"登录成功:{RemoteAddress} [{SteamID}] {ipCountry}");
+                        return BuildSuccess(RemoteAddress, fbr, SteamID).ToString();
                     }
                 }
             }

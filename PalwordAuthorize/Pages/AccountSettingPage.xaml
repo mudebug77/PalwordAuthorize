@@ -20,6 +20,7 @@
                     <CheckBox x:Name="c_EnablePasswordUser" Content="开启 密码StemID" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="132,45,0,0" Checked="ConfigChanged" Unchecked="ConfigChanged"/>
                     <CheckBox x:Name="c_EnableCountryCheck" Content="开启 IP区域检测" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="132,77,0,0" Checked="ConfigChanged" Unchecked="ConfigChanged"/>
                     <ComboBox x:Name="c_CountryCheckType" SelectionChanged="ConfigChanged" HorizontalAlignment="Left" FontSize="10" VerticalAlignment="Top" Margin="251,80,0,0" Width="120" />
+                    <CheckBox x:Name="c_EnablePrivateIP" Content="开启 允许私有IP(局入网)" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="132,114,0,0" Checked="ConfigChanged" Unchecked="ConfigChanged"/>
                 </Grid>
             </TabItem>
             <TabItem Header="密码StemID">

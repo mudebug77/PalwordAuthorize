@@ -61,6 +61,8 @@ namespace ET
         public bool EnablePasswordUser { get; set; } = true;
         public ObservableCollection<PasswordUserData> PasswordUserList { get; private set; } = new ObservableCollection<PasswordUserData>();
 
+
+        public bool EnablePrivateIP { get; set; } = true;
         public bool EnableCountryCheck { get; set; } = false;
         public ECountryCheckType CountryCheckType { get; set; } = ECountryCheckType.区域禁止;
         public ObservableCollection<CountryCheckData> CountryCheckList { get; private set; } = new ObservableCollection<CountryCheckData>();
