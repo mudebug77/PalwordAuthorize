@@ -342,9 +342,9 @@ public abstract class FArchive : IDisposable
         return FString.Deserialize(this);
     }
     
-    public void WriteString(string value)
+    public void WriteString(string value, bool unicode = false)
     {
-        FString.Serialize(this, value);
+        FString.Serialize(this, value, unicode);
     }
 
     public unsafe void Serialize(Span<byte> value, long num)

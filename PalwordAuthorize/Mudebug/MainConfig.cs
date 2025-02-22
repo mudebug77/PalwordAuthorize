@@ -69,5 +69,9 @@ namespace ET
         public bool EnableCountryCheck { get; set; } = false;
         public ECountryCheckType OtherCountryCheckType { get; set; } = ECountryCheckType.区域禁止;
         public ObservableCollection<CountryCheckData> CountryCheckList { get; private set; } = new ObservableCollection<CountryCheckData>();
+
+
+        public bool AutoUserCreatePassword { get; set; } = false;
+        public int AutoUserCreatePasswordLenth { get; set; } = 8;
     }
 }

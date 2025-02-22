@@ -248,6 +248,9 @@ public class FBitReader : FArchive
                 stringBuilder.Append(data.ToString("X2"));
             }
             return stringBuilder.ToString();
+        }else if (type == 8)
+        {
+            return ReadString();
         }
         return "INVALID";
     }

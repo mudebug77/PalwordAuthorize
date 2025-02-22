@@ -16,6 +16,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using UIConsole.App;
 using Windows.ApplicationModel.Contacts;
 
 namespace ET
@@ -68,8 +69,8 @@ namespace ET
             fbw.WriteByte(5);
             fbw.WriteString(ServerName);
             var newParameter = ReplaceParameterValue(Parameter, "ServerPassword", MainConfig.Instance.PalwordServerPassword);
-            fbw.WriteString(newParameter);
-            fbw.WriteUniqueNetId(newSteamID);
+            fbw.WriteString(newParameter,true);
+            fbw.WriteUniqueNetId(newSteamID,29);
             fbw.WriteString(ClientType);
 
             var BitHex = fbw.GetData().ToHex(0, (int)fbw.GetNumBytes());
@@ -135,24 +136,48 @@ namespace ET
                     PasswordUserData p_data = null;
                     if (MainConfig.Instance.EnablePasswordUser)
                     {
-                        string serverPassword = ExtractParameter(Parameter, "ServerPassword");
-                        if (serverPassword == null)
+                        string userPassword = ExtractParameter(Parameter, "ServerPassword");
+                        if (userPassword == null)
                         {
                             Log.Info($"用户未输入服务器密码:{RemoteAddress}");
                             return BuildFail(RemoteAddress, -3).ToString();
                         }
-                        p_data = MainConfig.Instance.PasswordUserList.FirstOrDefault(t => t.Enable && t.Password == serverPassword);
+                        p_data = MainConfig.Instance.PasswordUserList.FirstOrDefault(t => t.Enable && t.Password == userPassword);
                         if (p_data == null)
                         {
-                            Log.Info($"用户输入密码不存在:{RemoteAddress} [{serverPassword}]");
-                            return BuildFail(RemoteAddress, -4).ToString();
+                            if (MainConfig.Instance.AutoUserCreatePassword)
+                            {
+                                if (userPassword.Length < MainConfig.Instance.AutoUserCreatePasswordLenth)
+                                {
+                                    Log.Info($"密码长度不足不予创建:{SteamID} {RemoteAddress} [{userPassword}]");
+                                    return BuildFail(RemoteAddress, -4).ToString();
+                                }
+                                p_data = MainConfig.Instance.PasswordUserList.FirstOrDefault(t=>t.SteamID == SteamID);
+                                if (p_data != null)
+                                {
+                                    Log.Info($"用户SteamID已存在不予创建:{SteamID} {RemoteAddress} [{userPassword}]");
+                                    return BuildFail(RemoteAddress, -4).ToString();
+                                }
+
+                                Log.Info($"自动创建用户:{SteamID} {RemoteAddress} [{userPassword}]");
+                                await MainWindow.Ptr.Dispatcher.BeginInvoke(() =>
+                                {
+                                    p_data = new PasswordUserData() { Enable = true, Password = userPassword, SteamID = SteamID, Remark = $"AutoCraete {DateTime.Now} {RemoteAddress}" };
+                                    MainConfig.Instance.PasswordUserList.Add(p_data);
+                                });
+                            }
+                            else
+                            {
+                                Log.Info($"用户输入密码不存在:{RemoteAddress} [{userPassword}]");
+                                return BuildFail(RemoteAddress, -4).ToString();
+                            }
                         }
 
                         if (p_data.EnableExpireTime)
                         {
                             if (p_data.ExpireTime < DateTime.Now)
                             {
-                                Log.Info($"用户输入密码已过期:{RemoteAddress} [{serverPassword}] {p_data.ExpireTime}");
+                                Log.Info($"用户输入密码已过期:{RemoteAddress} [{userPassword}] {p_data.ExpireTime}");
                                 return BuildFail(RemoteAddress, -5).ToString();
                             }
                         }

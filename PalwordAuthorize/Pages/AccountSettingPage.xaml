@@ -24,6 +24,9 @@
 
                     <Label Content="不在列表的区域" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="33,110,0,0"/>
                     <ComboBox x:Name="c_OtherCountryCheckType" SelectionChanged="ConfigChanged" HorizontalAlignment="Left" FontSize="10" VerticalAlignment="Top" Margin="132,110,0,0" Width="120" />
+
+                    <CheckBox x:Name="c_AutoUserCreatePassword" Content="首次登录时创建密码 最低密码长度" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="132,141,0,0" Checked="ConfigChanged" Unchecked="ConfigChanged"/>
+                    <TextBox x:Name="c_AutoUserCreatePasswordLenth" Width="48" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="343,147,0,0" TextChanged="ConfigChanged"/>
                 </Grid>
             </TabItem>
             <TabItem Header="密码StemID">
