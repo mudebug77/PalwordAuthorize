@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using MongoDB.Bson.Serialization.Attributes;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -34,9 +35,16 @@ namespace ET
         public event PropertyChangedEventHandler PropertyChanged;
         public bool Enable { get; set; }
         public string Country { get; set; }
+        public string City { get; set; } = "ALL";
         public ECountryCheckType CountryCheckType { get; set; }
     }
 
+    [BsonIgnoreExtraElements]
+    public class StringConfig
+    {
+        public bool Enable { get; set; } = true;
+        public string Text { get; set; }
+    }
 
     public class MainConfig : Singleton<MainConfig>, ISingletonAwake, INotifyPropertyChanged
     {
@@ -73,5 +81,8 @@ namespace ET
 
         public bool AutoUserCreatePassword { get; set; } = false;
         public int AutoUserCreatePasswordLenth { get; set; } = 8;
+
+        public ObservableCollection<StringConfig> BlackList { get; private set; } = new ObservableCollection<StringConfig>();
+        
     }
 }

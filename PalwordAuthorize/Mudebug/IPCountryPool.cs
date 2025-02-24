@@ -12,55 +12,65 @@ using System.Threading.Tasks;
 
 namespace ET
 {
+    public class IPData
+    {
+        public int hash;
+        public string Country;
+        public string City;
+    }
+
     [Singleton]
     public class IPCountryPool : Singleton<IPCountryPool>, ISingletonAwake
     {
-        private List<(int hash, string Country)> IPHashAndCountry;
+        private List<IPData> IPHashAndCountry;
         public void Awake()
         {
-            IPHashAndCountry = new List<(int hash, string Country)>(200);
+            IPHashAndCountry = new List<IPData>(200);
         }
-        public void PushHistoryCountry(int iphash, string Country)
+        public IPData PushHistoryCountry(int iphash, string country, string city)
         {
-            IPHashAndCountry.Add((iphash, Country));
+            var data = new IPData() { hash = iphash, Country = country, City = city };
+            IPHashAndCountry.Add(data);
             if (IPHashAndCountry.Count > 198)
             {
                 IPHashAndCountry.RemoveAt(0);
             }
+            return data;
         }
-        public async ETTask<string> GetCountry(string ip)
+        public async ETTask<IPData> GetCountry(string ip)
         {
             var hash = ip.GetHashCode();
             var history = IPHashAndCountry.FirstOrDefault(t => t.hash == hash);
-            if (history.hash != 0)
+            if (history != null)
             {
-                return history.Country;
+                return history;
             }
 
             var jsonString = await $"http://ip-api.com/json/{ip}?time={TimeInfo.Instance.ClientNow()}".GetStringAsync();
             if (jsonString == null || jsonString[0] != '{')
             {
-                return "";
+                return null;
             }
             var retJson = JObject.Parse(jsonString);
             if (retJson["status"].ToString() == "success")
             {
                 var sCountry = retJson["country"].ToString();
+                var sCity = retJson["city"].ToString();
                 var sIsp = retJson["isp"].ToString();
-                Log.Info($"ip:{ip} country:{sCountry} isp:{sIsp}");
-                PushHistoryCountry(hash, sCountry);
-                return sCountry;
+                Log.Info($"ip:{ip} country:{sCountry} isp:{sIsp} city:{sCity}");
+                var data = PushHistoryCountry(hash, sCountry, sCity);
+                return data;
             }else
             {
                 var message = retJson["message"].ToString();
                 if (message == "private range" || ip == "127.0.0.1")
                 {
                     Log.Info($"ip:{ip} country:private");
-                    PushHistoryCountry(hash, "private");
-                    return "private";
+                    var data = PushHistoryCountry(hash, "private", "ALL");
+                    return data;
                 }
             }
-            return "";
+            return null;
         }
     }
 }

@@ -36,6 +36,7 @@ namespace ConsoleApp.Pages
 
             uiPasswordUserList.ItemsSource = MainConfig.Instance.PasswordUserList;
             uiCountryCheckList.ItemsSource = MainConfig.Instance.CountryCheckList;
+            uiBlackList.ItemsSource = MainConfig.Instance.BlackList;
 
             LoadingUi = false;
         }
@@ -64,7 +65,7 @@ namespace ConsoleApp.Pages
 
         private void mi_CountryCheckList_add_Click(object sender, RoutedEventArgs e)
         {
-            MainConfig.Instance.CountryCheckList.Add(new CountryCheckData() { Enable = false,  Country= "private" });
+            MainConfig.Instance.CountryCheckList.Add(new CountryCheckData() { Enable = false,  Country= "private", City="ALL" });
         }
 
         private void mi_CountryCheckList_del_Click(object sender, RoutedEventArgs e)
@@ -72,6 +73,18 @@ namespace ConsoleApp.Pages
             var select = uiCountryCheckList.SelectedItem as CountryCheckData;
             if (select == null) return;
             MainConfig.Instance.CountryCheckList.Remove(select);
+        }
+
+        private void mi_BlackList_add_Click(object sender, RoutedEventArgs e)
+        {
+            MainConfig.Instance.BlackList.Add(new StringConfig() { Enable = true, Text = "SteamID或IP" });
+        }
+
+        private void mi_BlackList_del_Click(object sender, RoutedEventArgs e)
+        {
+            var select = uiCountryCheckList.SelectedItem as StringConfig;
+            if (select == null) return;
+            MainConfig.Instance.BlackList.Remove(select);
         }
     }
 }

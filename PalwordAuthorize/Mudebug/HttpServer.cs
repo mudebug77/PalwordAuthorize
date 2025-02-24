@@ -92,44 +92,37 @@ namespace ET
                     var json = JObject.Parse(content);
                     var RemoteAddress = json["RemoteAddress"].ToString();
                     var hexBuffer = json["BitHex"].ToString().FormatBytes();
+
+                    var ip_data = RemoteAddress.Split(':');
+                    if (ip_data.Length != 2 || ip_data[0].Length == 0)
+                    {
+                        Log.Info($"解析IP数据错误:{RemoteAddress}");
+                        return BuildFail(RemoteAddress, -1).ToString();
+                    }
+
+
                     FBitReader fbr = new FBitReader(hexBuffer);
                     fbr.Pos = 8;
                     var ServerName = fbr.ReadString();
                     var Parameter = fbr.ReadString();
                     var SteamID = fbr.ReadUniqueNetId();
                     var ClientType = fbr.ReadString();
-                    var ipCountry = "";
+                    IPData ipData = null;
+
+
+                    var blacklist = MainConfig.Instance.BlackList.FirstOrDefault(t => t.Enable && (t.Text == SteamID || t.Text == ip_data[0]));
+                    if (blacklist != null)
+                    {
+                        Log.Info($"该用户是黑名单:{SteamID} {ip_data[0]}");
+                        return BuildFail(RemoteAddress, -2).ToString();
+                    }
 
                     if (MainConfig.Instance.EnableCountryCheck)
                     {
-                        var ip_data = RemoteAddress.Split(':');
-                        if (ip_data.Length != 2 || ip_data[0].Length == 0)
+                        ipData = await IPCountryPool.Instance.GetCountry(ip_data[0]);
+                        if (!IPCheck(ipData))
                         {
-                            return BuildFail(RemoteAddress, -1).ToString();
-                        }
-
-                        var ok = false;
-                        ipCountry = await IPCountryPool.Instance.GetCountry(ip_data[0]);
-                        var c_data = MainConfig.Instance.CountryCheckList.FirstOrDefault(t => t.Enable && t.Country == ipCountry);
-                        if (c_data != null)
-                        {
-                            if (c_data.CountryCheckType == ECountryCheckType.区域允许)
-                            {
-                                ok = true;
-                            }
-                        }
-                        else
-                        {
-                            //其他区域禁止
-                            if (MainConfig.Instance.OtherCountryCheckType == ECountryCheckType.区域允许)
-                            {
-                                ok = true;
-                            }
-                        }
-
-                        if (!ok)
-                        {
-                            Log.Info($"用户区域被禁止:{RemoteAddress} [{ipCountry}] [{SteamID}]");
+                            Log.Info($"用户IP被禁止:{RemoteAddress} [{SteamID}] [{ipData?.Country}][{ipData?.City}]");
                             return BuildFail(RemoteAddress, -2).ToString();
                         }
                     }
@@ -147,9 +140,9 @@ namespace ET
                         {
                             if (MainConfig.Instance.AutoUserCreatePassword)
                             {
-                                if (userPassword.Length < MainConfig.Instance.AutoUserCreatePasswordLenth)
+                                if ((userPassword.Length < MainConfig.Instance.AutoUserCreatePasswordLenth)&&(userPassword.Length > 24))
                                 {
-                                    Log.Info($"密码长度不足不予创建:{SteamID} {RemoteAddress} [{userPassword}]");
+                                    Log.Info($"密码长度不符不予创建:{SteamID} {RemoteAddress} [{userPassword}]");
                                     return BuildFail(RemoteAddress, -4).ToString();
                                 }
                                 p_data = MainConfig.Instance.PasswordUserList.FirstOrDefault(t=>t.SteamID == SteamID);
@@ -186,12 +179,12 @@ namespace ET
                     
                     if (p_data != null)
                     {
-                        Log.Info($"登录成功:{RemoteAddress} [{p_data.SteamID}] {ipCountry}");
+                        Log.Info($"登录成功:{RemoteAddress} [{p_data.SteamID}] [{ipData?.Country}][{ipData?.City}]");
                         return BuildSuccess(RemoteAddress, fbr, p_data.SteamID).ToString();
                     }
                     else
                     {
-                        Log.Info($"登录成功:{RemoteAddress} [{SteamID}] {ipCountry}");
+                        Log.Info($"登录成功:{RemoteAddress} [{SteamID}] [{ipData?.Country}][{ipData?.City}]");
                         return BuildSuccess(RemoteAddress, fbr, SteamID).ToString();
                     }
                 }
@@ -199,9 +192,37 @@ namespace ET
             return "{\"code\":-99}";
         }
 
+
+        private bool IPCheck(IPData ipData)
+        {
+            var c_data = MainConfig.Instance.CountryCheckList.FirstOrDefault(t => t.Enable && t.Country == ipData.Country && t.City == ipData.City);
+            if (c_data != null)
+            {
+                if (c_data.CountryCheckType == ECountryCheckType.区域允许)
+                {
+                    return true;
+                }
+                return false;
+            }
+            c_data = MainConfig.Instance.CountryCheckList.FirstOrDefault(t => t.Enable && t.Country == ipData.Country && t.City == "ALL");
+            if (c_data != null)
+            {
+                if (c_data.CountryCheckType == ECountryCheckType.区域允许)
+                {
+                    return true;
+                }
+                return false;
+            }
+            if (MainConfig.Instance.OtherCountryCheckType == ECountryCheckType.区域允许)
+            {
+                return true;
+            }
+            return false;
+        }
+
     }
 
-
+    
 
     public static class TextResponseSerializer
     {

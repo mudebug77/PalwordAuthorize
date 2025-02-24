@@ -117,10 +117,17 @@
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
-                            <GridViewColumn Width="125" Header="区域">
+                            <GridViewColumn Width="125" Header="国家">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBox Text="{Binding Country}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Width="125" Header="城市">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBox Text="{Binding City}" />
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
@@ -128,6 +135,45 @@
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
                                         <ComboBox ItemsSource="{Binding Source={StaticResource EnumCountryCheckType}}" SelectedItem="{Binding CountryCheckType}"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </TabItem>
+            <TabItem Header="黑名单">
+                <ListView x:Name="uiBlackList" ScrollViewer.HorizontalScrollBarVisibility ="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" IsSynchronizedWithCurrentItem="True" >
+                    <ListView.Resources>
+                        <ObjectDataProvider
+                                        x:Key="EnumCountryCheckType"
+                                        MethodName="GetValues"
+                                        ObjectType="{x:Type mscorlib:Enum}">
+                            <ObjectDataProvider.MethodParameters>
+                                <x:Type TypeName="ETSystem:ECountryCheckType">
+                                </x:Type>
+                            </ObjectDataProvider.MethodParameters>
+                        </ObjectDataProvider>
+                    </ListView.Resources>
+                    <ListView.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem x:Name="mi_BlackList_add" Header="新增" Click="mi_BlackList_add_Click"/>
+                            <MenuItem x:Name="mi_BlackList_del" Header="删除" Click="mi_BlackList_del_Click"/>
+                        </ContextMenu>
+                    </ListView.ContextMenu>
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Width="32" Header="啟用">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox IsChecked="{Binding Enable}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Width="175" Header="SteamID或IP">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBox Text="{Binding Text}" />
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
