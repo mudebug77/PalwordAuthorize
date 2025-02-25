@@ -62,12 +62,15 @@ namespace ET
                 return data;
             }else
             {
-                var message = retJson["message"].ToString();
-                if (message == "private range" || ip == "127.0.0.1")
+                if (retJson.ContainsKey("message"))
                 {
-                    Log.Info($"ip:{ip} country:private");
-                    var data = PushHistoryCountry(hash, "private", "ALL");
-                    return data;
+                    var message = retJson["message"].ToString();
+                    if (message == "private range" || ip == "127.0.0.1")
+                    {
+                        Log.Info($"ip:{ip} country:private");
+                        var data = PushHistoryCountry(hash, "private", "ALL");
+                        return data;
+                    }
                 }
             }
             return null;

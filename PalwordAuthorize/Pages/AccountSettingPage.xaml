@@ -117,7 +117,7 @@
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
-                            <GridViewColumn Width="125" Header="国家">
+                            <GridViewColumn Width="125" Header="地区">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBox Text="{Binding Country}" />
@@ -144,17 +144,6 @@
             </TabItem>
             <TabItem Header="黑名单">
                 <ListView x:Name="uiBlackList" ScrollViewer.HorizontalScrollBarVisibility ="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" IsSynchronizedWithCurrentItem="True" >
-                    <ListView.Resources>
-                        <ObjectDataProvider
-                                        x:Key="EnumCountryCheckType"
-                                        MethodName="GetValues"
-                                        ObjectType="{x:Type mscorlib:Enum}">
-                            <ObjectDataProvider.MethodParameters>
-                                <x:Type TypeName="ETSystem:ECountryCheckType">
-                                </x:Type>
-                            </ObjectDataProvider.MethodParameters>
-                        </ObjectDataProvider>
-                    </ListView.Resources>
                     <ListView.ContextMenu>
                         <ContextMenu>
                             <MenuItem x:Name="mi_BlackList_add" Header="新增" Click="mi_BlackList_add_Click"/>
@@ -170,7 +159,7 @@
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
-                            <GridViewColumn Width="175" Header="SteamID或IP">
+                            <GridViewColumn Width="175" Header="IP或SteamID或用户名">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBox Text="{Binding Text}" />

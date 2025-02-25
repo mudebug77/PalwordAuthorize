@@ -100,39 +100,45 @@ namespace ET
                         return BuildFail(RemoteAddress, -1).ToString();
                     }
 
-
+                    //{"Parameter":"?ServerPassword=1111111111?Name=Noob#initgame","MessageType":5,"ServerName":"0","Pad_1":29,"ClientType":"STEAM","RemoteAddress":"127.0.0.1:62077","SteamID":"076561197960287900"} 
                     FBitReader fbr = new FBitReader(hexBuffer);
                     fbr.Pos = 8;
                     var ServerName = fbr.ReadString();
                     var Parameter = fbr.ReadString();
                     var SteamID = fbr.ReadUniqueNetId();
                     var ClientType = fbr.ReadString();
+                    string userPassword = ExtractParameter(Parameter, "ServerPassword");
+                    string userName = ExtractParameter(Parameter, "Name");
                     IPData ipData = null;
 
 
-                    var blacklist = MainConfig.Instance.BlackList.FirstOrDefault(t => t.Enable && (t.Text == SteamID || t.Text == ip_data[0]));
+                    var blacklist = MainConfig.Instance.BlackList.FirstOrDefault(t => t.Enable && (t.Text == SteamID || t.Text == ip_data[0] || t.Text == userName));
                     if (blacklist != null)
                     {
-                        Log.Info($"该用户是黑名单:{SteamID} {ip_data[0]}");
+                        Log.Info($"该用户是黑名单:{SteamID} [{userName}] {ip_data[0]}");
                         return BuildFail(RemoteAddress, -2).ToString();
                     }
 
                     if (MainConfig.Instance.EnableCountryCheck)
                     {
                         ipData = await IPCountryPool.Instance.GetCountry(ip_data[0]);
+                        if (ipData == null)
+                        {
+                            Log.Info($"获取IP信息失败:{ip_data[0]} {SteamID} [{userName}]");
+                            return BuildFail(RemoteAddress, -2).ToString();
+                        }
                         if (!IPCheck(ipData))
                         {
-                            Log.Info($"用户IP被禁止:{RemoteAddress} [{SteamID}] [{ipData?.Country}][{ipData?.City}]");
+                            Log.Info($"用户IP被禁止:{ip_data[0]} {SteamID} [{userName}] [{ipData?.Country}][{ipData?.City}]");
                             return BuildFail(RemoteAddress, -2).ToString();
                         }
                     }
                     PasswordUserData p_data = null;
                     if (MainConfig.Instance.EnablePasswordUser)
                     {
-                        string userPassword = ExtractParameter(Parameter, "ServerPassword");
                         if (userPassword == null)
                         {
-                            Log.Info($"用户未输入服务器密码:{RemoteAddress}");
+                            Log.Info($"用户未输入服务器密码:{ip_data[0]} {SteamID} [{userName}] [{ipData?.Country}][{ipData?.City}]");
                             return BuildFail(RemoteAddress, -3).ToString();
                         }
                         p_data = MainConfig.Instance.PasswordUserList.FirstOrDefault(t => t.Enable && t.Password == userPassword);
@@ -142,17 +148,17 @@ namespace ET
                             {
                                 if ((userPassword.Length < MainConfig.Instance.AutoUserCreatePasswordLenth)&&(userPassword.Length > 24))
                                 {
-                                    Log.Info($"密码长度不符不予创建:{SteamID} {RemoteAddress} [{userPassword}]");
+                                    Log.Info($"密码长度不符不予创建:{SteamID} {ip_data[0]} [{userName}] [{userPassword}]");
                                     return BuildFail(RemoteAddress, -4).ToString();
                                 }
                                 p_data = MainConfig.Instance.PasswordUserList.FirstOrDefault(t=>t.SteamID == SteamID);
                                 if (p_data != null)
                                 {
-                                    Log.Info($"用户SteamID已存在不予创建:{SteamID} {RemoteAddress} [{userPassword}]");
+                                    Log.Info($"用户SteamID已存在不予创建:{SteamID} {ip_data[0]} [{userName}] [{userPassword}]");
                                     return BuildFail(RemoteAddress, -4).ToString();
                                 }
 
-                                Log.Info($"自动创建用户:{SteamID} {RemoteAddress} [{userPassword}]");
+                                Log.Info($"自动创建用户:{SteamID} {ip_data[0]} [{userName}] [{userPassword}]");
                                 await MainWindow.Ptr.Dispatcher.BeginInvoke(() =>
                                 {
                                     p_data = new PasswordUserData() { Enable = true, Password = userPassword, SteamID = SteamID, Remark = $"AutoCraete {DateTime.Now} {RemoteAddress}" };
@@ -161,7 +167,7 @@ namespace ET
                             }
                             else
                             {
-                                Log.Info($"用户输入密码不存在:{RemoteAddress} [{userPassword}]");
+                                Log.Info($"用户输入密码不存在:{ip_data[0]} [{userName}] [{userPassword}]");
                                 return BuildFail(RemoteAddress, -4).ToString();
                             }
                         }
@@ -170,7 +176,7 @@ namespace ET
                         {
                             if (p_data.ExpireTime < DateTime.Now)
                             {
-                                Log.Info($"用户输入密码已过期:{RemoteAddress} [{userPassword}] {p_data.ExpireTime}");
+                                Log.Info($"用户输入密码已过期:{p_data.SteamID} [{userName}][{userPassword}] {p_data.ExpireTime} {ip_data[0]}");
                                 return BuildFail(RemoteAddress, -5).ToString();
                             }
                         }
@@ -179,12 +185,12 @@ namespace ET
                     
                     if (p_data != null)
                     {
-                        Log.Info($"登录成功:{RemoteAddress} [{p_data.SteamID}] [{ipData?.Country}][{ipData?.City}]");
+                        Log.Info($"登录成功:[{p_data.SteamID}] [{userName}] [{ipData?.Country}][{ipData?.City}] {ip_data[0]}");
                         return BuildSuccess(RemoteAddress, fbr, p_data.SteamID).ToString();
                     }
                     else
                     {
-                        Log.Info($"登录成功:{RemoteAddress} [{SteamID}] [{ipData?.Country}][{ipData?.City}]");
+                        Log.Info($"登录成功:[{SteamID}] [{userName}] [{ipData?.Country}][{ipData?.City}] {ip_data[0]}");
                         return BuildSuccess(RemoteAddress, fbr, SteamID).ToString();
                     }
                 }
