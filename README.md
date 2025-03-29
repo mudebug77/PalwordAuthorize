@@ -26,6 +26,8 @@
 
 启动 PalwordAuthorize\PalwordAuthorize.exe 修改SteamID为你需要的ID<br>
 
+## 切换版本
+修改 Mods/mods.txt 最后一行 改成你对应的服务器版本即可
 
 
 ![功能0](Images/0.png)
